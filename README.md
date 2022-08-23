@@ -2,7 +2,9 @@
 #to find out ads-app.txt and create json file
 
 #extract ZIP in any of linux directory
+
 #go to ads folder
+
 #execute following command
 
 ./start.sh <filename>
