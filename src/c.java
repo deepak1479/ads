@@ -581,7 +581,7 @@ class c
 									adsurl = new String[3];
 									adsurl[0] = protocol+"://"+f1+"."+f2;
 									adsurl[1] = protocol+"://"+previous+"."+f1+"."+f2;
-									adsurl[1] = protocol+"://www."+f1+"."+f2;
+									adsurl[2] = protocol+"://www."+f1+"."+f2;
 								}
 
 							}
@@ -670,7 +670,7 @@ class c
 									adsurl = new String[3];
 									adsurl[0] = protocol+"://"+f1+"."+f2;
 									adsurl[1] = protocol+"://"+previous+"."+f1+"."+f2;
-									adsurl[1] = protocol+"://www."+f1+"."+f2;
+									adsurl[2] = protocol+"://www."+f1+"."+f2;
 								}
 
 							}
@@ -823,7 +823,7 @@ class HTMLLinkExtractor {
 									adsurl = new String[3];
 									adsurl[0] = protocol+"://"+f1+"."+f2;
 									adsurl[1] = protocol+"://"+previous+"."+f1+"."+f2;
-									adsurl[1] = protocol+"://www."+f1+"."+f2;
+									adsurl[2] = protocol+"://www."+f1+"."+f2;
 								}
 
 							}
