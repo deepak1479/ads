@@ -1,6 +1,7 @@
 #execute following command
 
-./start.sh <filename>
+./start.sh <inputfilename>
+
 
 #java and javac command must be in you Linux PATH
 #output file will be created in output folder

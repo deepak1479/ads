@@ -131,14 +131,43 @@ class c
 			{
 				url = url.replaceAll("\"","");
 			}
-			url = url.toLowerCase();
+			//url = url.toLowerCase();
 
-            if (!url.startsWith("http://") && !url.startsWith("https://"))
+            if (!url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://"))
+			{
+				if(url.indexOf(":") != -1)
+					url = url.substring(url.indexOf(":") + 3);
+				
 				url = "http://"+url;
+			}
 			
 			System.out.println("calling of url : " + url);
 
-			 serverAddress = new URL(url);
+			serverAddress = new URL(url);
+			if(serverAddress.getHost().toLowerCase().startsWith("com."))
+			{
+				String rev[] = serverAddress.getHost().split("\\.");
+				int ri = 0;
+				String new_url = null;
+				String page = null;
+				page = url.substring(url.indexOf(":") + 3);
+				if(page.indexOf("/") != -1)
+					page = "/"+page.substring(page.indexOf("/") + 1);
+				else
+					page = "";
+				while(ri < rev.length)
+				{
+					if(new_url == null)
+						new_url = rev[ri];
+					else
+						new_url = rev[ri]+"."+new_url;
+					ri++;
+				}
+				new_url = serverAddress.getProtocol() + "://" + new_url+page;
+				System.out.println("reverse of url : " + new_url);
+				serverAddress = new URL(new_url);
+				url = new_url;
+			}
 
             if (url.startsWith("https://")) {
 
@@ -162,12 +191,12 @@ class c
 			http.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
             //http.setDoOutput(true);
 			//http.setRequestProperty("Accept-Encoding", "gzip");
-            http.setConnectTimeout(50000);
-            http.setReadTimeout(50000);
+            http.setConnectTimeout(5000);
+            http.setReadTimeout(5000);
             http.connect();
            
 			int resCode = http.getResponseCode();
-
+			System.out.println("response code = "+resCode);
 			 if (resCode == HttpURLConnection.HTTP_SEE_OTHER
                 || resCode == HttpURLConnection.HTTP_MOVED_PERM
                 || resCode == HttpURLConnection.HTTP_MOVED_TEMP) {
@@ -202,7 +231,7 @@ class c
             while ((line = rd.readLine()) != null) {
 				
 				//System.out.println(line );
-               	if(line.indexOf("appstore:developer_url") != -1)
+               	if(line.toLowerCase().indexOf("appstore:developer_url") != -1)
 				{
 
 					String devurl[] =  extractDevUrl(line);
@@ -228,9 +257,32 @@ class c
 					
 					break;
 				}
+				sb.append(line);
             }
 			if(isfound == 0)
-				writeNAData(publisher+"  -   developer_url notfound");
+			{
+				
+				//try other method 
+				String devurl[] =  HTMLLinkExtractor.grabHTMLLinks(sb.toString());
+				if(devurl != null)
+				{
+					int di = 0;
+					while(di < devurl.length)
+					{
+						found = callingFinalURL(publisher,devurl[di]+"/app-ads.txt");
+						if(found == 1)							
+							break;
+						
+						di++;
+					}
+					if(found == 0)
+						writeNAData(publisher+"  -   app-ads.txt notfound");
+				}
+				else
+					writeNAData(publisher+"  -   developer_url notfound");
+
+				
+			}
 			else if(found == 0)
 				writeNAData(publisher+"  -   app-ads.txt notfound");
             //System.out.println("response of url : " + sb.toString());
@@ -287,9 +339,9 @@ class c
 			{
 				url = url.replaceAll("\"","");
 			}
-			url = url.toLowerCase();
+			//url = url.toLowerCase();
 
-            if (!url.startsWith("http://") && !url.startsWith("https://"))
+            if (!url.toLowerCase().startsWith("http://") && !url.toLowerCase().startsWith("https://"))
 				url = "http://"+url;
 			
 			System.out.println("calling of url : " + url);
@@ -318,8 +370,8 @@ class c
 			http.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.4; en-US; rv:1.9.2.2) Gecko/20100316 Firefox/3.6.2");
             //http.setDoOutput(true);
 			http.setRequestProperty("Accept-Encoding", "gzip");
-            http.setConnectTimeout(50000);
-            http.setReadTimeout(50000);
+            http.setConnectTimeout(5000);
+            http.setReadTimeout(5000);
             http.connect();
            
 			int resCode = http.getResponseCode();
@@ -479,7 +531,7 @@ class c
 		Matcher m = p.matcher(str);
 		String astr = null;
 		while(m.find()) {
-			if(m.group(0).indexOf("appstore:developer_url") != -1)
+			if(m.group(0).toLowerCase().indexOf("appstore:developer_url") != -1)
 			{
 			   System.out.println(m.group(0));
 			   System.out.println(m.group(1));
@@ -516,16 +568,117 @@ class c
 						if(alltld.contains(f2))
 						{
 							
-							if(previous != null && !previous.equals("www") && !previous.equals("m"))
+							if(previous != null /*&& !previous.equals("www") && !previous.equals("m")*/)
 							{
-								adsurl = new String[2];
-								adsurl[0] = protocol+"://"+f1+"."+f2;
-								adsurl[1] = protocol+"://"+previous+"."+f1+"."+f2;
+								if(previous.equals("www"))
+								{
+									adsurl = new String[2];
+									adsurl[0] = protocol+"://"+f1+"."+f2;
+									adsurl[1] = protocol+"://"+previous+"."+f1+"."+f2;
+								}
+								else
+								{
+									adsurl = new String[3];
+									adsurl[0] = protocol+"://"+f1+"."+f2;
+									adsurl[1] = protocol+"://"+previous+"."+f1+"."+f2;
+									adsurl[1] = protocol+"://www."+f1+"."+f2;
+								}
+
 							}
 							else
 							{
-								adsurl = new String[1];
+								adsurl = new String[2];
 								adsurl[0] = protocol+"://"+f1+"."+f2;
+								adsurl[1] = protocol+"://www."+f1+"."+f2;
+							}
+
+							//return protocol+"://"+f1+"."+f2;
+							return adsurl;
+						}
+						previous = f1.toLowerCase();
+						host = f2;
+					}
+					
+					adsurl = new String[1];
+					adsurl[0] = protocol+"://"+host;
+					return adsurl;
+				}
+				si++;
+			}
+			return null;
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return null;
+		}
+	}
+
+	static String[] extractPrivacyUrl(String str)
+	{
+		Pattern p = Pattern.compile("<(.*?)>");
+		Matcher m = p.matcher(str);
+		String astr = null;
+		while(m.find()) {
+			if(m.group(0).toLowerCase().indexOf("appstore:developer_url") != -1)
+			{
+			   System.out.println(m.group(0));
+			   System.out.println(m.group(1));
+			   astr = m.group(0);
+			   break;
+			}
+		}
+
+		String strarr[] = astr.split("[\\s<>]");
+		try
+		{
+			int si = 0;
+			while(si < strarr.length)
+			{
+				String tstr = strarr[si];
+				if(tstr.toLowerCase().indexOf("content=") != -1)
+				{
+					tstr = tstr.substring(8);
+					tstr = tstr.replaceAll("\"","").replaceAll(">","");
+					
+					URL serverAddress = new URL(tstr);
+					String host = serverAddress.getHost();
+					String protocol = serverAddress.getProtocol();
+					
+					System.out.println(protocol +"   "+host);
+					String previous = null;
+					String adsurl[] = null;
+					while(host.indexOf(".") != -1)
+					{
+						String f1 = host.substring(0,host.indexOf("."));
+						String f2 = host.substring(host.indexOf(".") + 1);
+						System.out.println(f1 +"   "+f2);
+
+						if(alltld.contains(f2.toLowerCase()))
+						{
+							
+							if(previous != null /*&& !previous.equals("www") && !previous.equals("m")*/)
+							{
+								if(previous.equals("www"))
+								{
+									adsurl = new String[2];
+									adsurl[0] = protocol+"://"+f1+"."+f2;
+									adsurl[1] = protocol+"://"+previous+"."+f1+"."+f2;
+								}
+								else
+								{
+									adsurl = new String[3];
+									adsurl[0] = protocol+"://"+f1+"."+f2;
+									adsurl[1] = protocol+"://"+previous+"."+f1+"."+f2;
+									adsurl[1] = protocol+"://www."+f1+"."+f2;
+								}
+
+							}
+							else
+							{
+								adsurl = new String[2];
+								adsurl[0] = protocol+"://"+f1+"."+f2;
+								adsurl[1] = protocol+"://www."+f1+"."+f2;
 							}
 
 							//return protocol+"://"+f1+"."+f2;
@@ -592,4 +745,130 @@ class c
 		}
 
 	}
+}
+
+class HTMLLinkExtractor {
+
+	private static Pattern patternTag, patternLink;
+	private static Matcher matcherTag, matcherLink;
+
+	private static final String HTML_A_TAG_PATTERN = "(?i)<a([^>]+)>(.+?)</a>";
+	private static final String HTML_A_HREF_TAG_PATTERN = 
+		"\\s*(?i)href\\s*=\\s*(\"([^\"]*\")|'[^']*'|([^'\">\\s]+))";
+	
+
+	static {
+		patternTag = Pattern.compile(HTML_A_TAG_PATTERN);
+		patternLink = Pattern.compile(HTML_A_HREF_TAG_PATTERN);
+	}
+
+	
+	public static String[]  grabHTMLLinks(final String html) {
+
+		//Vector<HtmlLink> result = new Vector<HtmlLink>();
+
+		try
+		{
+			
+		
+
+		matcherTag = patternTag.matcher(html);
+
+		while (matcherTag.find()) {
+
+			String href = matcherTag.group(1); // href
+			String linkText = matcherTag.group(2); // link text
+
+			matcherLink = patternLink.matcher(href);
+
+			while (matcherLink.find()) {
+
+				String link = matcherLink.group(1); // link
+				//HtmlLink obj = new HtmlLink();
+
+				
+
+				if(linkText .length() < 100 && (linkText.toLowerCase().indexOf("privacy") != -1 && linkText.toLowerCase().indexOf("developer") != -1))
+				{
+					System.out.println(link +" "+linkText);
+
+					link = link.replaceAll("\"","");
+					
+					URL serverAddress = new URL(link);
+					String host = serverAddress.getHost();
+					String protocol = serverAddress.getProtocol();
+					
+					System.out.println(protocol +"   "+host);
+					String previous = null;
+					String adsurl[] = null;
+					while(host.indexOf(".") != -1)
+					{
+						String f1 = host.substring(0,host.indexOf("."));
+						String f2 = host.substring(host.indexOf(".") + 1);
+						System.out.println(f1 +"   "+f2);
+
+						if(c.alltld.contains(f2.toLowerCase()))
+						{
+							
+							if(previous != null /*&& !previous.equals("www") && !previous.equals("m")*/)
+							{
+								if(previous.equals("www"))
+								{
+									adsurl = new String[2];
+									adsurl[0] = protocol+"://"+f1+"."+f2;
+									adsurl[1] = protocol+"://"+previous+"."+f1+"."+f2;
+								}
+								else
+								{
+									adsurl = new String[3];
+									adsurl[0] = protocol+"://"+f1+"."+f2;
+									adsurl[1] = protocol+"://"+previous+"."+f1+"."+f2;
+									adsurl[1] = protocol+"://www."+f1+"."+f2;
+								}
+
+							}
+							else
+							{
+								adsurl = new String[2];
+								adsurl[0] = protocol+"://"+f1+"."+f2;
+								adsurl[1] = protocol+"://www."+f1+"."+f2;
+							}
+
+							//return protocol+"://"+f1+"."+f2;
+							return adsurl;
+						}
+						previous = f1.toLowerCase();
+						host = f2;
+					}
+					
+					adsurl = new String[1];
+					adsurl[0] = protocol+"://"+host;
+					return adsurl;
+
+					//return link;
+				}
+				else if(linkText .length() < 100 && (linkText.toLowerCase().indexOf("privacy") != -1 || linkText.toLowerCase().indexOf("developer") != -1 || link.toLowerCase().indexOf("http://") != -1 || link.toLowerCase().indexOf("https://") != -1 ))
+					System.out.println(link +" "+linkText);
+				//obj.setLink(link);
+				//obj.setLinkText(linkText);
+				
+				//result.add(obj);
+
+			}
+
+		}
+		
+		return null;
+		//return result;
+
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+			return null;
+		}
+
+	}
+
+	
 }
