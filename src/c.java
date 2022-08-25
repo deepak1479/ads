@@ -163,7 +163,7 @@ class c implements Runnable
 
 			if (url.startsWith("\""))
 			{
-				url = url.replaceAll("\"","");
+				url = url.replaceAll("\"","").replaceAll("\\{","").replaceAll("\\}","");
 			}
 			//url = url.toLowerCase();
 
@@ -406,7 +406,7 @@ class c implements Runnable
 
 			if (url.startsWith("\""))
 			{
-				url = url.replaceAll("\"","");
+				url = url.replaceAll("\"","").replaceAll("\\{","").replaceAll("\\}","");;
 			}
 			//url = url.toLowerCase();
 
@@ -511,7 +511,7 @@ class c implements Runnable
 					}
 				   
 				}
-				finaldata.put("publisherURL",publisher.replaceAll("\"",""));
+				finaldata.put("publisherURL",publisher.replaceAll("\"","").replaceAll("\\{","").replaceAll("\\}",""));
 				finaldata.put("contentList",data);
 				//System.out.println("finaldata : " + finaldata.toString());
 				writeData( finaldata.toString());
@@ -961,7 +961,7 @@ class HTMLLinkExtractor {
 				//HtmlLink obj = new HtmlLink();
 
 				//System.out.println(link +" "+linkText);
-				link = link.replaceAll("\"","");
+				link = link.replaceAll("\"","").replaceAll("\\{","").replaceAll("\\}","");;
 
 				if(linkText .length() < 200 && (linkText.toLowerCase().indexOf("privacy") != -1 || linkText.toLowerCase().indexOf("developer") != -1)  && link.toLowerCase().indexOf(ohost) == -1 && (link.toLowerCase().indexOf("http://") != -1 || link.toLowerCase().indexOf("https://") != -1))
 				{
