@@ -9,7 +9,7 @@
 
 ./start.sh <filename>
 
-#java and javac command must be in you Linux PATH
+#java and javac command must be in you Linux PATH[jdk version 8 or above]
 
 #output file will be created in output folder
 
