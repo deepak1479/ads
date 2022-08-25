@@ -7,7 +7,7 @@
 
 #execute following command
 
-./start.sh <filename>
+./start.sh [filename]
 
 #java and javac command must be in you Linux PATH[jdk version 8 or above]
 
